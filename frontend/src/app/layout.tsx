@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Starter app for building voice agents using the OpenAI Agents SDK",
   icons: {
-    icon: "/openai_logo.svg",
+    icon: "/small_logo.png",
   },
 };
 
