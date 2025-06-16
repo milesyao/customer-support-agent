@@ -8,7 +8,7 @@
     "dev": "concurrently \"npm run dev:next\" \"npm run dev:server\"",
     "build": "next build",
     "start": "nohup next start > next.log 2>&1 &",
-    "start:server": "cd ../server && uv run server.py",
+    "start:server": "cd ../server && nohup uv run server.py > server.log 2>&1 &",
     "prod": "npm run start && npm run start:server",
     "lint": "next lint",
     "clean": "rm -rf .next out node_modules/.cache"
