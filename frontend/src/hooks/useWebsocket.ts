@@ -26,8 +26,8 @@ export function useWebsocket({
   const [agentName, setAgentName] = useState<string | null>(null);
   const websocket = useRef<WebSocket | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const reconnectTimeout = useRef<NodeJS.Timeout>();
-  const heartbeatInterval = useRef<NodeJS.Timeout>();
+  const reconnectTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+  const heartbeatInterval = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const connect = () => {
     if (websocket.current?.readyState === WebSocket.OPEN) {
