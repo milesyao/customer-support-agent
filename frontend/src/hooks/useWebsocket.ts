@@ -15,7 +15,9 @@ export function useWebsocket({
   url =
     url ??
     process.env.NEXT_PUBLIC_WEBSOCKET_ENDPOINT ??
-    "ws://ec2-3-145-63-176.us-east-2.compute.amazonaws.com:8000/ws";
+    (window.location.protocol === 'https:' 
+      ? 'wss://ec2-3-145-63-176.us-east-2.compute.amazonaws.com:8000/ws'
+      : 'ws://ec2-3-145-63-176.us-east-2.compute.amazonaws.com:8000/ws');
   const [isReady, setIsReady] = useState(false);
   const [history, setHistory] = useState<Message[]>([]);
   const [agentName, setAgentName] = useState<string | null>(null);

@@ -126,5 +126,21 @@ async def websocket_endpoint(websocket: WebSocket):
 
 if __name__ == "__main__":
     import uvicorn
+    import os
 
-    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
+    # Check if SSL certificates exist
+    ssl_keyfile = "certs/key.pem"
+    ssl_certfile = "certs/cert.pem"
+    
+    if os.path.exists(ssl_keyfile) and os.path.exists(ssl_certfile):
+        uvicorn.run(
+            "server:app",
+            host="0.0.0.0",
+            port=8000,
+            reload=True,
+            ssl_keyfile=ssl_keyfile,
+            ssl_certfile=ssl_certfile
+        )
+    else:
+        print("SSL certificates not found. Running without HTTPS...")
+        uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
