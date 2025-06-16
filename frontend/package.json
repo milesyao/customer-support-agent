@@ -10,7 +10,8 @@
     "start": "nohup next start > next.log 2>&1 &",
     "start:server": "cd ../server && uv run server.py",
     "prod": "npm run start && npm run start:server",
-    "lint": "next lint"
+    "lint": "next lint",
+    "clean": "rm -rf .next out node_modules/.cache"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.2",
