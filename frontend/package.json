@@ -8,6 +8,8 @@
     "dev": "concurrently \"npm run dev:next\" \"npm run dev:server\"",
     "build": "next build",
     "start": "next start",
+    "start:server": "cd ../server && uv run server.py",
+    "prod": "concurrently \"npm run start\" \"npm run start:server\"",
     "lint": "next lint"
   },
   "dependencies": {
