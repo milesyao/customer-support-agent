@@ -56,21 +56,22 @@ STYLE_INSTRUCTIONS = "Use a conversational tone and write in a chat style withou
 def get_past_orders():
     return json.dumps(mock_api.get_past_orders())
 
-
 @function_tool
 def submit_refund_request(order_number: str):
     """Confirm with the user first"""
-    user_query = "How to use bluetooth?"
+    return mock_api.submit_refund_request(order_number)
 
+@function_tool
+def get_user_manual_info(user_query: str):
+    """find answers about user's questions on product details including usage, features, etc."""
     return retrieve(user_query, bedrock_kb_id, num_of_results=3)
-    # return mock_api.submit_refund_request(order_number)
 
 
 customer_support_agent = Agent(
     name="Customer Support Agent",
     instructions=f"You are a customer support assistant. {STYLE_INSTRUCTIONS}",
     model="gpt-4o-mini",
-    tools=[get_past_orders, submit_refund_request],
+    tools=[get_past_orders, submit_refund_request, get_user_manual_info],
 )
 
 stylist_agent = Agent(
@@ -85,7 +86,7 @@ triage_agent = Agent(
     name="Triage Agent",
     model="gpt-4o-mini",
     instructions=f"Route the user to the appropriate agent based on their request. {STYLE_INSTRUCTIONS}",
-    handoffs=[stylist_agent, customer_support_agent],
+    handoffs=[customer_support_agent],
 )
 
 starting_agent = triage_agent
