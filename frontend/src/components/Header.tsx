@@ -25,7 +25,7 @@ export function Header({
   return (
     <div className="flex flex-row gap-2 w-full relative justify-between items-center py-4 px-4 bg-white text-black border-b border-gray-100 dark:bg-gray-900 dark:text-white dark:border-gray-800">
       <div className="flex flex-row gap-2 items-center px-5">
-        <Image src="/SEEWIN_logo.avif" alt="SEEWIN Logo" width={96} height={96} className="dark:invert" />
+        <Image src="/hoham_logo.png" alt="hoham Logo" width={96} height={96} className="dark:invert" />
       </div>
       {agentName && (
         <div
