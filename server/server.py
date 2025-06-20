@@ -97,6 +97,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     print(f"new text message: {message}")
                     user_input = process_inputs(message, connection)
                     async for new_output_tokens in workflow.run(user_input):
+                        print(f"new output tokens: {new_output_tokens}", flush=True)
                         await connection.stream_response(new_output_tokens, is_text=True)
 
                 # Handle a new audio chunk
