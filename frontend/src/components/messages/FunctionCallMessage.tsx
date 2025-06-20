@@ -17,9 +17,25 @@ export function FunctionCallMessage({ message }: FunctionCallMessageProps) {
   }
 
   let output = message?.output;
+  let fileLinks: { name: string; url: string }[] | null = null;
+
   try {
     if (message.output) {
-      output = JSON.stringify(JSON.parse(message.output), null, 2);
+      const parsed = JSON.parse(message.output);
+      const keys = Object.keys(parsed);
+      const allLinks =
+        keys.length > 0 &&
+        keys.every(
+          (key) =>
+            typeof parsed[key] === "string" && parsed[key].startsWith("http"),
+        );
+
+      if (allLinks) {
+        fileLinks = keys.map((key) => ({ name: key, url: parsed[key] }));
+        output = undefined;
+      } else {
+        output = JSON.stringify(parsed, null, 2);
+      }
     }
   } catch {
     output = message.output;
@@ -56,7 +72,21 @@ export function FunctionCallMessage({ message }: FunctionCallMessageProps) {
               </SyntaxHighlighter>
             </div>
             <div className="max-h-80 overflow-y-scroll mx-6 p-2 text-xs">
-              {output ? (
+              {fileLinks ? (
+                <div className="flex flex-col gap-2">
+                  {fileLinks.map((fileLink) => (
+                    <a
+                      key={fileLink.name}
+                      href={fileLink.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      {fileLink.name}
+                    </a>
+                  ))}
+                </div>
+              ) : output ? (
                 <SyntaxHighlighter
                   customStyle={{
                     backgroundColor: "#fafafa",
