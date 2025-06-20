@@ -78,7 +78,6 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             try:
                 message = await websocket.receive_json()
-                logger.info(f"message: {message}")
                 
                 # Handle heartbeat
                 if message.get("type") == "ping":
@@ -87,10 +86,12 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 # Handle text based messages
                 if is_sync_message(message):
+                    logger.info(f"new sync message: {message}")
                     connection.history = message["inputs"]
                     if message.get("reset_agent", False):
                         connection.latest_agent = starting_agent
                 elif is_new_text_message(message):
+                    logger.info(f"new text message: {message}")
                     user_input = process_inputs(message, connection)
                     async for new_output_tokens in workflow.run(user_input):
                         await connection.stream_response(new_output_tokens, is_text=True)
