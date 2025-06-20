@@ -64,7 +64,9 @@ def submit_refund_request(order_number: str):
 @function_tool
 def get_user_manual_info(user_query: str):
     """find answers about user's questions on product details including usage, features, etc."""
-    return retrieve(user_query, bedrock_kb_id, num_of_results=3)
+    retrieved_results = retrieve(user_query, bedrock_kb_id, num_of_results=3)
+    print(f"retrieved_results: {retrieved_results}")
+    return retrieved_results
 
 
 customer_support_agent = Agent(
