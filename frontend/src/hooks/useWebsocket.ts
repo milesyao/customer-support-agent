@@ -3,6 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { Message } from "@/lib/types";
 import { arrayBufferToBase64, base64ToArrayBuffer } from "@/lib/utils";
 
+const RECONNECT_INTERVAL = 3000; // 3 seconds
+const HEARTBEAT_INTERVAL = 30000; // 30 seconds
+
 export function useWebsocket({
   url,
   onNewAudio,
@@ -15,28 +18,50 @@ export function useWebsocket({
   url =
     url ??
     process.env.NEXT_PUBLIC_WEBSOCKET_ENDPOINT ??
-    "ws://localhost:8000/ws";
+    "ws://ec2-3-145-63-176.us-east-2.compute.amazonaws.com:8000/ws";
   const [isReady, setIsReady] = useState(false);
   const [history, setHistory] = useState<Message[]>([]);
   const [agentName, setAgentName] = useState<string | null>(null);
   const websocket = useRef<WebSocket | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const reconnectTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+  const heartbeatInterval = useRef<NodeJS.Timeout | undefined>(undefined);
 
-  useEffect(() => {
+  const connect = () => {
+    if (websocket.current?.readyState === WebSocket.OPEN) {
+      return;
+    }
+
     const ws = new WebSocket(url);
+    
     ws.addEventListener("open", () => {
       setIsReady(true);
+      // Start heartbeat
+      heartbeatInterval.current = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "ping" }));
+        }
+      }, HEARTBEAT_INTERVAL);
     });
+
     ws.addEventListener("close", () => {
       setIsReady(false);
+      clearInterval(heartbeatInterval.current);
+      // Attempt to reconnect
+      reconnectTimeout.current = setTimeout(connect, RECONNECT_INTERVAL);
     });
+
     ws.addEventListener("error", (event) => {
       setIsReady(false);
       setIsLoading(false);
       console.error("Websocket error", event);
     });
+
     ws.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
+      if (data.type === "pong") {
+        return; // Ignore pong messages
+      }
       if (data.type === "history.updated") {
         if (data.inputs[data.inputs.length - 1].role !== "user") {
           setIsLoading(false);
@@ -58,13 +83,17 @@ export function useWebsocket({
     });
 
     websocket.current = ws;
-  }, [url, onNewAudio, onAudioDone]);
+  };
 
   useEffect(() => {
+    connect();
+
     return () => {
+      clearTimeout(reconnectTimeout.current);
+      clearInterval(heartbeatInterval.current);
       websocket.current?.close();
     };
-  }, []);
+  }, [url, onNewAudio, onAudioDone]);
 
   function sendTextMessage(message: string) {
     setIsLoading(true);

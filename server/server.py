@@ -78,50 +78,59 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             try:
                 message = await websocket.receive_json()
+                
+                # Handle heartbeat
+                if message.get("type") == "ping":
+                    await websocket.send_json({"type": "pong"})
+                    continue
+
+                # Handle text based messages
+                if is_sync_message(message):
+                    connection.history = message["inputs"]
+                    if message.get("reset_agent", False):
+                        connection.latest_agent = starting_agent
+                elif is_new_text_message(message):
+                    user_input = process_inputs(message, connection)
+                    async for new_output_tokens in workflow.run(user_input):
+                        await connection.stream_response(new_output_tokens, is_text=True)
+
+                # Handle a new audio chunk
+                elif is_new_audio_chunk(message):
+                    audio_buffer.append(extract_audio_chunk(message))
+
+                # Send full audio to the agent
+                elif is_audio_complete(message):
+                    start_time = time.perf_counter()
+
+                    def transform_data(data):
+                        nonlocal start_time
+                        if start_time:
+                            print(
+                                f"Time taken to first byte: {time.perf_counter() - start_time}s"
+                            )
+                            start_time = None
+                        return data
+
+                    audio_input = concat_audio_chunks(audio_buffer)
+                    output = await VoicePipeline(
+                        workflow=workflow,
+                        config=VoicePipelineConfig(
+                            tts_settings=TTSModelSettings(
+                                buffer_size=512, transform_data=transform_data
+                            )
+                        ),
+                    ).run(audio_input)
+                    async for event in output.stream():
+                        await connection.send_audio_chunk(event)
+
+                    audio_buffer = []  # reset the audio buffer
+
             except WebSocketDisconnect:
                 print("Client disconnected")
                 return
-
-            # Handle text based messages
-            if is_sync_message(message):
-                connection.history = message["inputs"]
-                if message.get("reset_agent", False):
-                    connection.latest_agent = starting_agent
-            elif is_new_text_message(message):
-                user_input = process_inputs(message, connection)
-                async for new_output_tokens in workflow.run(user_input):
-                    await connection.stream_response(new_output_tokens, is_text=True)
-
-            # Handle a new audio chunk
-            elif is_new_audio_chunk(message):
-                audio_buffer.append(extract_audio_chunk(message))
-
-            # Send full audio to the agent
-            elif is_audio_complete(message):
-                start_time = time.perf_counter()
-
-                def transform_data(data):
-                    nonlocal start_time
-                    if start_time:
-                        print(
-                            f"Time taken to first byte: {time.perf_counter() - start_time}s"
-                        )
-                        start_time = None
-                    return data
-
-                audio_input = concat_audio_chunks(audio_buffer)
-                output = await VoicePipeline(
-                    workflow=workflow,
-                    config=VoicePipelineConfig(
-                        tts_settings=TTSModelSettings(
-                            buffer_size=512, transform_data=transform_data
-                        )
-                    ),
-                ).run(audio_input)
-                async for event in output.stream():
-                    await connection.send_audio_chunk(event)
-
-                audio_buffer = []  # reset the audio buffer
+            except Exception as e:
+                print(f"Error handling message: {e}")
+                continue
 
 
 if __name__ == "__main__":
