@@ -78,8 +78,7 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             try:
                 message = await websocket.receive_json()
-                logger.info(f"message: {message}")
-                print(f"message: {message}", flush=True)
+                
                 # Handle heartbeat
                 if message.get("type") == "ping":
                     await websocket.send_json({"type": "pong"})
@@ -87,17 +86,12 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 # Handle text based messages
                 if is_sync_message(message):
-                    logger.info(f"new sync message: {message}")
-                    print(f"new sync message: {message}", flush=True)
                     connection.history = message["inputs"]
                     if message.get("reset_agent", False):
                         connection.latest_agent = starting_agent
                 elif is_new_text_message(message):
-                    logger.info(f"new text message: {message}", flush=True)
-                    print(f"new text message: {message}")
                     user_input = process_inputs(message, connection)
                     async for new_output_tokens in workflow.run(user_input):
-                        print(f"new output tokens: {new_output_tokens}", flush=True)
                         await connection.stream_response(new_output_tokens, is_text=True)
 
                 # Handle a new audio chunk

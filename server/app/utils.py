@@ -134,12 +134,10 @@ class WebsocketHelper:
             if input_item["type"] == "function_call_output":
                 sources = {}
                 s3 = boto3.client('s3')
-                # print(f"input_item output: {input_item['output']}", flush=True)
-                # parse string to json dictionary
+
                 output_json = json.loads(input_item["output"])
                 for result in output_json["retrievalResults"]:
                     s3_url = result["metadata"]["x-amz-bedrock-kb-source-uri"]
-                    # Remove 's3://' prefix and split only on the first slash
                     s3_path = s3_url.replace('s3://', '', 1)
                     bucket_name, document_name = s3_path.split('/', 1)
                     presigned_url = s3.generate_presigned_url(
@@ -150,7 +148,6 @@ class WebsocketHelper:
                     sources[document_name] = presigned_url
                 input_item["output"] = json.dumps(sources)
 
-            print(f"input_item: {input_item}", flush=True)
             self.history.append(input_item)  # type: ignore
             await self.websocket.send_text(
                 json.dumps(
