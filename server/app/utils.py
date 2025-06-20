@@ -148,7 +148,7 @@ class WebsocketHelper:
                         ExpiresIn=3600  # URL valid for 1 hour
                     )
                     sources[document_name] = presigned_url
-                input_item["output"] = sources
+                input_item["output"] = json.dumps(sources)
 
             print(f"input_item: {input_item}", flush=True)
             self.history.append(input_item)  # type: ignore
