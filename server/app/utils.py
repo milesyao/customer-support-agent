@@ -134,6 +134,7 @@ class WebsocketHelper:
             if input_item["type"] == "function_call_output":
                 sources = {}
                 s3 = boto3.client('s3')
+                print(f"input_item output: {input_item["output"]}", flush=True)
                 # parse string to json dictionary
                 output_json = json.loads(input_item["output"])
                 for result in output_json["retrievalResults"]:
