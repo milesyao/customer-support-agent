@@ -52,17 +52,19 @@ def retrieve(user_query, kb_id, num_of_results=5):
 STYLE_INSTRUCTIONS = "Use a conversational tone and write in a chat style without formal formatting or lists and do not use any emojis."
 
 @function_tool
-def get_product_info(user_query: str):
-    """find answers about user's questions on product details including usage, features, etc."""
+def get_known_product_info(user_query: str):
+    """find answers about user's questions on product details related to iSteady M7 including usage, features, etc."""
     retrieved_results = retrieve(user_query, bedrock_kb_id, num_of_results=3)
     return retrieved_results
 
 
 customer_support_agent = Agent(
     name="Customer Support Agent",
-    instructions=f"You are a customer support assistant. Always use the get_product_info tool to answer user's questions. {STYLE_INSTRUCTIONS}",
+    instructions=f"You are a customer support assistant. Only answer questions related to Hohem. \
+        Use get_known_product_info tool to answer questions related to iSteady M7, otherwise use WebSearchTool \
+            to get latest information about Hoham products, Q & A and customer policy. {STYLE_INSTRUCTIONS}",
     model="gpt-4o-mini",
-    tools=[get_product_info],
+    tools=[get_known_product_info, WebSearchTool(user_location="US")],
 )
 
 starting_agent = customer_support_agent
