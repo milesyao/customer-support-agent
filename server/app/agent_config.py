@@ -55,7 +55,10 @@ STYLE_INSTRUCTIONS = "Use a conversational tone and write in a chat style withou
 def get_known_product_info(user_query: str):
     """find answers about user's questions on product details including usage, features, etc."""
     retrieved_results = retrieve(user_query, bedrock_kb_id, num_of_results=3)
-    return retrieved_results
+    sources = []
+    for result in retrieved_results["retrievalResults"]:
+        sources.append(result["metadata"]["x-amz-bedrock-kb-source-uri"])
+    return sources
 
 supported_products = ["iSteady M7"]
 
