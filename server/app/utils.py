@@ -127,7 +127,16 @@ class WebsocketHelper:
     ):
         if is_new_output_item(event):
             self.history.append(event.item.to_input_item())  # type: ignore
-
+            
+            to_send = json.dumps(
+                    {
+                        "type": "history.updated",
+                        "reason": "response.input_item",
+                        "inputs": self.history,
+                        "agent_name": self.latest_agent.name,
+                    }
+                )
+            print(f"to_send: {to_send}", flush=True)
             await self.websocket.send_text(
                 json.dumps(
                     {
