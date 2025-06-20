@@ -33,7 +33,7 @@ export function FunctionCallMessage({ message }: FunctionCallMessageProps) {
               <FunctionsIcon width={16} height={16} />
               <div className="text-sm font-medium">
                 {message.status === "completed"
-                  ? `Called ${message.name}`
+                  ? `Called ${message.type}`
                   : `Calling ${message.name}...`}
               </div>
             </div>
