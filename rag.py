@@ -51,3 +51,11 @@ user_query = "How to use bluetooth?"
 response = retrieve(user_query, bedrock_kb_id, num_of_results=3)
 
 print("Retrieval Results:\n", json.dumps(response['retrievalResults'], indent=2, default=str))
+
+s3 = boto3.client('s3')
+presigned_url = s3.generate_presigned_url(
+    'get_object',
+    Params={'Bucket': 'customer-support-1', 'Key': '20250313-iSteady M7 说明书 英文（增加延长杆备注）.pdf'},
+    ExpiresIn=3600  # URL valid for 1 hour
+)
+print(presigned_url)

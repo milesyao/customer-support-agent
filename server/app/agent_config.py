@@ -35,7 +35,6 @@ bedrock_kb_id = "W9CGK0RGBV"
 print("AWS Region:", aws_region)
 print("Bedrock Knowledge Base ID:", bedrock_kb_id)
 
-
 # Implement the `retrieve` function
 def retrieve(user_query, kb_id, num_of_results=5):
     return bedrock_agent_client.retrieve(
@@ -53,40 +52,23 @@ def retrieve(user_query, kb_id, num_of_results=5):
 STYLE_INSTRUCTIONS = "Use a conversational tone and write in a chat style without formal formatting or lists and do not use any emojis."
 
 @function_tool
-def get_past_orders():
-    return json.dumps(mock_api.get_past_orders())
-
-@function_tool
-def submit_refund_request(order_number: str):
-    """Confirm with the user first"""
-    return mock_api.submit_refund_request(order_number)
-
-@function_tool
-def get_user_manual_info(user_query: str):
+def get_known_product_info(user_query: str):
     """find answers about user's questions on product details including usage, features, etc."""
-    return retrieve(user_query, bedrock_kb_id, num_of_results=3)
+    retrieved_results = retrieve(user_query, bedrock_kb_id, num_of_results=3)
+    return json.dumps(retrieved_results)
 
+supported_products = ["iSteady M7", "iSteady MT2"]
+
+# Create dynamic product list for instructions
+product_list = ", ".join(supported_products)
 
 customer_support_agent = Agent(
     name="Customer Support Agent",
-    instructions=f"You are a customer support assistant. {STYLE_INSTRUCTIONS}",
+    instructions=f"You are a customer support assistant. \
+        Use get_known_product_info tool to answer questions related to {product_list}, otherwise use WebSearchTool \
+        to get latest information about Hoham products, Q & A and customer policy. {STYLE_INSTRUCTIONS}",
     model="gpt-4o-mini",
-    tools=[get_past_orders, submit_refund_request, get_user_manual_info],
+    tools=[get_known_product_info, WebSearchTool()],
 )
 
-stylist_agent = Agent(
-    name="Stylist Agent",
-    model="gpt-4o-mini",
-    instructions=f"You are a stylist assistant. {STYLE_INSTRUCTIONS}",
-    tools=[WebSearchTool(user_location=UserLocation(type="approximate", city="Tokyo"))],
-    handoffs=[customer_support_agent],
-)
-
-triage_agent = Agent(
-    name="Triage Agent",
-    model="gpt-4o-mini",
-    instructions=f"Route the user to the appropriate agent based on their request. {STYLE_INSTRUCTIONS}",
-    handoffs=[customer_support_agent],
-)
-
-starting_agent = triage_agent
+starting_agent = customer_support_agent

@@ -1,5 +1,8 @@
 import base64
 import json
+import boto3
+from botocore.client import Config
+from botocore.exceptions import ClientError
 
 import numpy as np
 from agents import (
@@ -126,8 +129,26 @@ class WebsocketHelper:
         event: RawResponsesStreamEvent | RunItemStreamEvent | AgentUpdatedStreamEvent,
     ):
         if is_new_output_item(event):
-            self.history.append(event.item.to_input_item())  # type: ignore
+            input_item = event.item.to_input_item()  # type: ignore
+            
+            if input_item["type"] == "function_call_output":
+                sources = {}
+                s3 = boto3.client('s3')
 
+                output_json = json.loads(input_item["output"])
+                for result in output_json["retrievalResults"]:
+                    s3_url = result["metadata"]["x-amz-bedrock-kb-source-uri"]
+                    s3_path = s3_url.replace('s3://', '', 1)
+                    bucket_name, document_name = s3_path.split('/', 1)
+                    presigned_url = s3.generate_presigned_url(
+                        'get_object',
+                        Params={'Bucket': bucket_name, 'Key': document_name},
+                        ExpiresIn=3600  # URL valid for 1 hour
+                    )
+                    sources[document_name] = presigned_url
+                input_item["output"] = json.dumps(sources)
+
+            self.history.append(input_item)  # type: ignore
             await self.websocket.send_text(
                 json.dumps(
                     {
