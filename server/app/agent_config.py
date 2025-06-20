@@ -55,9 +55,19 @@ STYLE_INSTRUCTIONS = "Use a conversational tone and write in a chat style withou
 def get_known_product_info(user_query: str):
     """find answers about user's questions on product details including usage, features, etc."""
     retrieved_results = retrieve(user_query, bedrock_kb_id, num_of_results=3)
-    sources = []
+    sources = {}
+    s3 = boto3.client('s3')
     for result in retrieved_results["retrievalResults"]:
-        sources.append(result["metadata"]["x-amz-bedrock-kb-source-uri"])
+        s3_url = result["metadata"]["x-amz-bedrock-kb-source-uri"]
+        # Remove 's3://' prefix and split only on the first slash
+        s3_path = s3_url.replace('s3://', '', 1)
+        bucket_name, document_name = s3_path.split('/', 1)
+        presigned_url = s3.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': document_name},
+            ExpiresIn=3600  # URL valid for 1 hour
+        )
+        sources[document_name] = presigned_url
     return sources
 
 supported_products = ["iSteady M7"]
