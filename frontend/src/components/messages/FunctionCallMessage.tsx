@@ -56,21 +56,6 @@ export function FunctionCallMessage({ message }: FunctionCallMessageProps) {
           </div>
 
           <div className="bg-[#fafafa] rounded-xl py-2 ml-4 mt-2">
-            <div className="max-h-96 overflow-y-scroll text-xs border-b mx-6 p-2">
-              <SyntaxHighlighter
-                customStyle={{
-                  backgroundColor: "#fafafa",
-                  padding: "8px",
-                  paddingLeft: "0px",
-                  marginTop: 0,
-                  marginBottom: 0,
-                }}
-                language="json"
-                style={coy}
-              >
-                {JSON.stringify(JSON.parse(message.arguments), null, 2)}
-              </SyntaxHighlighter>
-            </div>
             <div className="max-h-80 overflow-y-scroll mx-6 p-2 text-xs">
               {fileLinks ? (
                 <div className="flex flex-col gap-2">
