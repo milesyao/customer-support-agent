@@ -69,7 +69,7 @@ def get_known_product_info(user_query: str):
     #     )
     #     sources[document_name] = presigned_url
     # return sources
-    return retrieved_results
+    return json.dumps(retrieved_results)
 
 supported_products = ["iSteady M7"]
 
