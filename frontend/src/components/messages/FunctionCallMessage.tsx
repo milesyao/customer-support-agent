@@ -17,12 +17,9 @@ export function FunctionCallMessage({ message }: FunctionCallMessageProps) {
   }
 
   let output = message?.output;
-  const isGetKnownProductInfo = message.name === "get_known_product_info";
-  let parsedOutput: Record<string, string> | null = null;
   try {
     if (message.output) {
-      parsedOutput = JSON.parse(message.output);
-      output = JSON.stringify(parsedOutput, null, 2);
+      output = JSON.stringify(JSON.parse(message.output), null, 2);
     }
   } catch {
     output = message.output;
@@ -59,22 +56,7 @@ export function FunctionCallMessage({ message }: FunctionCallMessageProps) {
               </SyntaxHighlighter>
             </div>
             <div className="max-h-80 overflow-y-scroll mx-6 p-2 text-xs">
-              {isGetKnownProductInfo && parsedOutput && typeof parsedOutput === "object" ? (
-                <ul className="list-disc pl-4">
-                  {Object.entries(parsedOutput).map(([docName, url]) => (
-                    <li key={docName} className="mb-1">
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline break-all"
-                      >
-                        {docName}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              ) : output ? (
+              {output ? (
                 <SyntaxHighlighter
                   customStyle={{
                     backgroundColor: "#fafafa",
