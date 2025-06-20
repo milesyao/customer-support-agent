@@ -64,7 +64,7 @@ product_list = ", ".join(supported_products)
 
 customer_support_agent = Agent(
     name="Customer Support Agent",
-    instructions=f"You are a customer support assistant. Only answer questions related to Hohem. For non-Hohem-related questions, just answer 
+    instructions=f"You are a customer support assistant. Only answer questions related to Hohem. For non-Hohem-related questions, just answer \
     : I am not able to answer that question. \
         Use get_known_product_info tool to answer questions related to {product_list}, otherwise use WebSearchTool \
             to get latest information about Hoham products, Q & A and customer policy. {STYLE_INSTRUCTIONS}",
