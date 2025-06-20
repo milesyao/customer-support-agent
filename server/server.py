@@ -78,8 +78,8 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             try:
                 message = await websocket.receive_json()
-                print(f"message: {message}")
-
+                logger.info(f"message: {message}")
+                print(f"message: {message}", flush=True)
                 
                 # Handle heartbeat
                 if message.get("type") == "ping":
