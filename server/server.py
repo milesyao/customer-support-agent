@@ -78,6 +78,8 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             try:
                 message = await websocket.receive_json()
+                print(f"message: {message}")
+
                 
                 # Handle heartbeat
                 if message.get("type") == "ping":
@@ -89,7 +91,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     connection.history = message["inputs"]
                     if message.get("reset_agent", False):
                         connection.latest_agent = starting_agent
-                    print(f"message: {message}")
                 elif is_new_text_message(message):
                     user_input = process_inputs(message, connection)
                     async for new_output_tokens in workflow.run(user_input):
