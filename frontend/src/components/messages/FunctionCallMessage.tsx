@@ -17,7 +17,7 @@ export function FunctionCallMessage({ message }: FunctionCallMessageProps) {
   }
 
   let output = message?.output;
-  let isGetKnownProductInfo = message.name === "get_known_product_info";
+  const isGetKnownProductInfo = message.name === "get_known_product_info";
   let parsedOutput: Record<string, string> | null = null;
   try {
     if (message.output) {
