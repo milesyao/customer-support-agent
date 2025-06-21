@@ -57,16 +57,11 @@ def get_known_product_info(user_query: str):
     retrieved_results = retrieve(user_query, bedrock_kb_id, num_of_results=3)
     return json.dumps(retrieved_results)
 
-supported_products = ["iSteady M7", "iSteady MT2"]
-
-# Create dynamic product list for instructions
-product_list = ", ".join(supported_products)
-
 customer_support_agent = Agent(
     name="Customer Support Agent",
     instructions=f"You are a customer support assistant. \
-        Use get_known_product_info tool to answer questions related to {product_list}, otherwise use WebSearchTool \
-        to get latest information about Hoham products, Q & A and customer policy. {STYLE_INSTRUCTIONS}",
+        Use get_known_product_info tool to answer questions related to Hohem products. \
+            If answers are not found from get_known_product_info tool, use WebSearchTool. {STYLE_INSTRUCTIONS}",
     model="gpt-4o-mini",
     tools=[get_known_product_info, WebSearchTool()],
 )
