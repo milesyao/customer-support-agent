@@ -9,6 +9,7 @@ from agents.voice import (
     VoicePipeline,
     VoicePipelineConfig,
     VoiceWorkflowBase,
+    STTModelSettings,
 )
 from app.agent_config import starting_agent
 from app.utils import (
@@ -112,14 +113,25 @@ async def websocket_endpoint(websocket: WebSocket):
                         return data
 
                     audio_input = concat_audio_chunks(audio_buffer)
+
+                    sttSettings = STTModelSettings(turn_detection={"type": "server_vad","silence_duration_ms": 200})
+                    config = VoicePipelineConfig(stt_settings=sttSettings)
                     output = await VoicePipeline(
                         workflow=workflow,
-                        config=VoicePipelineConfig(
-                            tts_settings=TTSModelSettings(
-                                buffer_size=512, transform_data=transform_data
-                            )
-                        ),
+                        stt_model="gpt-4o-mini-transcribe",
+                        tts_model="gpt-4o-mini-tts",
+                        config=config
                     ).run(audio_input)
+
+                    # output = await VoicePipeline(
+                    #     workflow=workflow,
+                    #     config=VoicePipelineConfig(
+                    #         tts_settings=TTSModelSettings(
+                    #             buffer_size=512, transform_data=transform_data
+                    #         )
+                    #     ),
+                    # ).run(audio_input)
+
                     async for event in output.stream():
                         await connection.send_audio_chunk(event)
 
